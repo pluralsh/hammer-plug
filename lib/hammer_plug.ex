@@ -130,6 +130,7 @@ defmodule Hammer.Plug do
 
   def call(conn, opts) do
     {id_prefix, scale, limit} = Keyword.get(opts, :rate_limit)
+                                |> fetch_rate_limit()
     by = Keyword.get(opts, :by, :ip)
     when_nil = Keyword.get(opts, :when_nil, :use_nil)
 
@@ -214,6 +215,9 @@ defmodule Hammer.Plug do
         on_deny_handler.(conn, [])
     end
   end
+
+  defp fetch_rate_limit({_, _, _} = res), do: res
+  defp fetch_rate_limit(fun) when is_function(fun), do: fun.()
 
   defp is_valid_method(by) do
     case by do
